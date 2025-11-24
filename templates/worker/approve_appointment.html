@@ -1,0 +1,192 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Gestionar Cita{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="row">
+    <!-- Información de la cita -->
+    <div class="col-md-6">
+      <div class="card shadow-sm mb-4">
+        <div class="card-header bg-info text-white">
+          <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Información de la Cita</h5>
+        </div>
+        <div class="card-body">
+          <div class="mb-3">
+            <label class="text-muted small">ID de Cita</label>
+            <h5>#{{ cita.id }}</h5>
+          </div>
+
+          <div class="mb-3">
+            <label class="text-muted small">Usuario</label>
+            <h6>
+              <i class="fas fa-user text-primary me-2"></i>
+              {{ cita.user.username }}
+            </h6>
+            <p class="mb-0"><small>{{ cita.user.email }}</small></p>
+          </div>
+
+          <div class="mb-3">
+            <label class="text-muted small">Título</label>
+            <h5>{{ cita.title }}</h5>
+          </div>
+
+          <div class="row mb-3">
+            <div class="col-6">
+              <label class="text-muted small">Fecha</label>
+              <p class="mb-0">
+                <i class="fas fa-calendar text-success me-2"></i>
+                {{ cita.date|date:"d/m/Y" }}
+              </p>
+            </div>
+            <div class="col-6">
+              <label class="text-muted small">Hora</label>
+              <p class="mb-0">
+                <i class="fas fa-clock text-warning me-2"></i>
+                {{ cita.time|time:"H:i" }}
+              </p>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="text-muted small">Estado Actual</label>
+            <div>
+              {% if cita.status == 'pending' %}
+                <span class="badge bg-warning fs-6">Pendiente</span>
+              {% elif cita.status == 'confirmed' %}
+                <span class="badge bg-success fs-6">Confirmada</span>
+              {% elif cita.status == 'cancelled' %}
+                <span class="badge bg-danger fs-6">Cancelada</span>
+              {% else %}
+                <span class="badge bg-secondary fs-6">Completada</span>
+              {% endif %}
+            </div>
+          </div>
+
+          {% if cita.notes %}
+            <div class="mb-3">
+              <label class="text-muted small">Notas del Cliente</label>
+              <div class="alert alert-light border">
+                <i class="fas fa-comment text-secondary me-2"></i>
+                {{ cita.notes }}
+              </div>
+            </div>
+          {% endif %}
+
+          <div class="mb-3">
+            <label class="text-muted small">Creada el</label>
+            <p class="mb-0">{{ cita.created_at|date:"d/m/Y H:i" }}</p>
+          </div>
+
+          {% if cita.updated_at %}
+            <div class="mb-3">
+              <label class="text-muted small">Última actualización</label>
+              <p class="mb-0">{{ cita.updated_at|date:"d/m/Y H:i" }}</p>
+            </div>
+          {% endif %}
+
+          {% if cita.approved_by %}
+            <div class="alert alert-info">
+              <i class="fas fa-user-check me-2"></i>
+              <strong>Gestionada por:</strong> {{ cita.approved_by.username }}
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Formulario de gestión -->
+    <div class="col-md-6">
+      <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+          <h5 class="mb-0"><i class="fas fa-edit me-2"></i>Gestionar Cita</h5>
+        </div>
+        <div class="card-body">
+          <form method="post">
+            {% csrf_token %}
+
+            <div class="mb-3">
+              <label for="{{ form.status.id_for_label }}" class="form-label">
+                <i class="fas fa-toggle-on me-1"></i>Cambiar Estado
+              </label>
+              {{ form.status }}
+              {% if form.status.errors %}
+                <div class="text-danger small">{{ form.status.errors }}</div>
+              {% endif %}
+              <small class="form-text text-muted">
+                Selecciona el nuevo estado para esta cita
+              </small>
+            </div>
+
+            <div class="mb-3">
+              <label for="{{ form.admin_notes.id_for_label }}" class="form-label">
+                <i class="fas fa-sticky-note me-1"></i>Notas Internas
+              </label>
+              {{ form.admin_notes }}
+              {% if form.admin_notes.errors %}
+                <div class="text-danger small">{{ form.admin_notes.errors }}</div>
+              {% endif %}
+              <small class="form-text text-muted">
+                Notas visibles solo para el equipo administrativo
+              </small>
+            </div>
+
+            <div class="alert alert-warning">
+              <i class="fas fa-exclamation-triangle me-2"></i>
+              <strong>Importante:</strong> Al cambiar el estado, el usuario será notificado del cambio.
+            </div>
+
+            <div class="d-grid gap-2">
+              <button type="submit" class="btn btn-success btn-lg">
+                <i class="fas fa-save me-2"></i>Guardar Cambios
+              </button>
+              <a href="{% url 'manage_appointments' %}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Volver a la lista
+              </a>
+              <a href="{% url 'worker_dashboard' %}" class="btn btn-outline-primary">
+                <i class="fas fa-home me-2"></i>Dashboard
+              </a>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Acciones rápidas -->
+      <div class="card shadow-sm mt-3">
+        <div class="card-header bg-dark text-white">
+          <h6 class="mb-0"><i class="fas fa-bolt me-2"></i>Acciones Rápidas</h6>
+        </div>
+        <div class="card-body">
+          <div class="d-grid gap-2">
+            {% if cita.status == 'pending' %}
+              <form method="post" class="d-inline">
+                {% csrf_token %}
+                <input type="hidden" name="status" value="confirmed">
+                <button type="submit" class="btn btn-success w-100">
+                  <i class="fas fa-check me-2"></i>Confirmar Cita
+                </button>
+              </form>
+              <form method="post" class="d-inline">
+                {% csrf_token %}
+                <input type="hidden" name="status" value="cancelled">
+                <textarea name="admin_notes" class="form-control mb-2" placeholder="Motivo de cancelación..." required></textarea>
+                <button type="submit" class="btn btn-danger w-100">
+                  <i class="fas fa-times me-2"></i>Rechazar Cita
+                </button>
+              </form>
+            {% elif cita.status == 'confirmed' %}
+              <form method="post" class="d-inline">
+                {% csrf_token %}
+                <input type="hidden" name="status" value="completed">
+                <button type="submit" class="btn btn-secondary w-100">
+                  <i class="fas fa-check-double me-2"></i>Marcar como Completada
+                </button>
+              </form>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

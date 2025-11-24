@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Editar Perfil{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="row justify-content-center">
+    <div class="col-md-6">
+      <div class="card shadow-lg border-0">
+        <div class="card-header bg-primary text-white text-center">
+          <h4 class="mb-0"><i class="fas fa-user-edit me-2"></i>Editar Mi Perfil</h4>
+        </div>
+        <div class="card-body p-4">
+          <form method="post">
+            {% csrf_token %}
+
+            <div class="mb-3">
+              <label for="first_name" class="form-label">
+                <i class="fas fa-user me-1 text-primary"></i>Nombre
+              </label>
+              <input type="text" name="first_name" id="first_name" 
+                     class="form-control" value="{{ user.first_name }}" 
+                     placeholder="Tu nombre">
+            </div>
+
+            <div class="mb-3">
+              <label for="last_name" class="form-label">
+                <i class="fas fa-user me-1 text-primary"></i>Apellido
+              </label>
+              <input type="text" name="last_name" id="last_name" 
+                     class="form-control" value="{{ user.last_name }}" 
+                     placeholder="Tu apellido">
+            </div>
+
+            <div class="mb-3">
+              <label for="email" class="form-label">
+                <i class="fas fa-envelope me-1 text-primary"></i>Correo Electrónico
+              </label>
+              <input type="email" name="email" id="email" 
+                     class="form-control" value="{{ user.email }}" 
+                     placeholder="tu@email.com" required>
+            </div>
+
+            <div class="alert alert-info">
+              <i class="fas fa-info-circle me-2"></i>
+              <small>Para cambiar tu contraseña, contacta al administrador.</small>
+            </div>
+
+            <div class="d-grid gap-2">
+              <button type="submit" class="btn btn-primary btn-lg">
+                <i class="fas fa-save me-2"></i>Guardar Cambios
+              </button>
+              <a href="{% url 'profile' %}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Volver al Perfil
+              </a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

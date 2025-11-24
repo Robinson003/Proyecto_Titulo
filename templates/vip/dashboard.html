@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Dashboard VIP{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-tachometer-alt text-primary me-2"></i>Mi Dashboard VIP</h2>
+    <a href="{% url 'request_appointment' %}" class="btn btn-primary">
+      <i class="fas fa-calendar-plus me-2"></i>Nueva Cita
+    </a>
+  </div>
+
+  <!-- Tarjetas de estadísticas -->
+  <div class="row mb-4">
+    <div class="col-md-6 mb-3">
+      <div class="card border-warning shadow-sm">
+        <div class="card-body d-flex align-items-center">
+          <div class="me-3">
+            <i class="fas fa-clock fa-3x text-warning"></i>
+          </div>
+          <div>
+            <h3 class="mb-0">{{ pending_count }}</h3>
+            <p class="text-muted mb-0">Citas Pendientes</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6 mb-3">
+      <div class="card border-success shadow-sm">
+        <div class="card-body d-flex align-items-center">
+          <div class="me-3">
+            <i class="fas fa-check-circle fa-3x text-success"></i>
+          </div>
+          <div>
+            <h3 class="mb-0">{{ confirmed_count }}</h3>
+            <p class="text-muted mb-0">Citas Confirmadas</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Próximas citas -->
+  <div class="card shadow-sm mb-4">
+    <div class="card-header bg-primary text-white">
+      <h5 class="mb-0"><i class="fas fa-calendar-check me-2"></i>Próximas Citas</h5>
+    </div>
+    <div class="card-body">
+      {% if upcoming %}
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th>Título</th>
+                <th>Fecha</th>
+                <th>Hora</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for cita in upcoming %}
+                <tr>
+                  <td>{{ cita.title }}</td>
+                  <td>{{ cita.date|date:"d/m/Y" }}</td>
+                  <td>{{ cita.time|time:"H:i" }}</td>
+                  <td>
+                    {% if cita.status == 'pending' %}
+                      <span class="badge bg-warning">Pendiente</span>
+                    {% elif cita.status == 'confirmed' %}
+                      <span class="badge bg-success">Confirmada</span>
+                    {% endif %}
+                  </td>
+                  <td>
+                    {% if cita.status in 'pending,confirmed' %}
+                      <a href="{% url 'cancel_appointment' cita.id %}" class="btn btn-sm btn-outline-danger"
+                         onclick="return confirm('¿Seguro que deseas cancelar esta cita?')">
+                        <i class="fas fa-times"></i> Cancelar
+                      </a>
+                    {% endif %}
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="text-center py-4">
+          <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+          <p class="text-muted">No tienes citas próximas</p>
+          <a href="{% url 'request_appointment' %}" class="btn btn-primary">Solicitar una cita</a>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Historial reciente -->
+  <div class="card shadow-sm">
+    <div class="card-header bg-secondary text-white">
+      <h5 class="mb-0"><i class="fas fa-history me-2"></i>Historial Reciente</h5>
+    </div>
+    <div class="card-body">
+      {% if history %}
+        <div class="list-group">
+          {% for cita in history %}
+            <div class="list-group-item">
+              <div class="d-flex justify-content-between align-items-center">
+                <div>
+                  <h6 class="mb-1">{{ cita.title }}</h6>
+                  <small class="text-muted">{{ cita.date|date:"d/m/Y" }} a las {{ cita.time|time:"H:i" }}</small>
+                </div>
+                <div>
+                  {% if cita.status == 'completed' %}
+                    <span class="badge bg-secondary">Completada</span>
+                  {% elif cita.status == 'cancelled' %}
+                    <span class="badge bg-danger">Cancelada</span>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p class="text-muted text-center">No hay historial disponible</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

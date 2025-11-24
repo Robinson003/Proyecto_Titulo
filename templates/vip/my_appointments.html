@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Mis Citas{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-list me-2 text-primary"></i>Mis Citas</h2>
+    <a href="{% url 'request_appointment' %}" class="btn btn-primary">
+      <i class="fas fa-plus me-2"></i>Nueva Cita
+    </a>
+  </div>
+
+  <!-- Filtros -->
+  <div class="card shadow-sm mb-4">
+    <div class="card-body">
+      <form method="get" class="row g-3">
+        <div class="col-md-4">
+          <label class="form-label">Filtrar por estado:</label>
+          <select name="status" class="form-select" onchange="this.form.submit()">
+            <option value="">Todos</option>
+            <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>Pendientes</option>
+            <option value="confirmed" {% if status_filter == 'confirmed' %}selected{% endif %}>Confirmadas</option>
+            <option value="cancelled" {% if status_filter == 'cancelled' %}selected{% endif %}>Canceladas</option>
+            <option value="completed" {% if status_filter == 'completed' %}selected{% endif %}>Completadas</option>
+          </select>
+        </div>
+        <div class="col-md-8 d-flex align-items-end">
+          <button type="submit" class="btn btn-secondary me-2">
+            <i class="fas fa-filter me-1"></i>Filtrar
+          </button>
+          <a href="{% url 'my_appointments' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-redo me-1"></i>Limpiar
+          </a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Lista de citas -->
+  {% if citas %}
+    <div class="row">
+      {% for cita in citas %}
+        <div class="col-md-6 mb-3">
+          <div class="card shadow-sm h-100 
+            {% if cita.status == 'pending' %}border-warning
+            {% elif cita.status == 'confirmed' %}border-success
+            {% elif cita.status == 'cancelled' %}border-danger
+            {% else %}border-secondary{% endif %}">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-start mb-3">
+                <h5 class="card-title mb-0">{{ cita.title }}</h5>
+                {% if cita.status == 'pending' %}
+                  <span class="badge bg-warning">Pendiente</span>
+                {% elif cita.status == 'confirmed' %}
+                  <span class="badge bg-success">Confirmada</span>
+                {% elif cita.status == 'cancelled' %}
+                  <span class="badge bg-danger">Cancelada</span>
+                {% else %}
+                  <span class="badge bg-secondary">Completada</span>
+                {% endif %}
+              </div>
+
+              <div class="mb-2">
+                <i class="fas fa-calendar text-primary me-2"></i>
+                <strong>Fecha:</strong> {{ cita.date|date:"d/m/Y" }}
+              </div>
+
+              <div class="mb-2">
+                <i class="fas fa-clock text-info me-2"></i>
+                <strong>Hora:</strong> {{ cita.time|time:"H:i" }}
+              </div>
+
+              {% if cita.notes %}
+                <div class="mb-2">
+                  <i class="fas fa-comment text-secondary me-2"></i>
+                  <strong>Notas:</strong> {{ cita.notes|truncatewords:15 }}
+                </div>
+              {% endif %}
+
+              {% if cita.admin_notes and cita.status == 'cancelled' %}
+                <div class="alert alert-danger small mb-2">
+                  <i class="fas fa-info-circle me-1"></i>
+                  <strong>Motivo:</strong> {{ cita.admin_notes }}
+                </div>
+              {% endif %}
+
+              <hr>
+
+              <div class="d-flex justify-content-between align-items-center">
+                <small class="text-muted">
+                  Creada: {{ cita.created_at|date:"d/m/Y H:i" }}
+                </small>
+                {% if cita.status in 'pending,confirmed' %}
+                  <a href="{% url 'cancel_appointment' cita.id %}" 
+                     class="btn btn-sm btn-outline-danger"
+                     onclick="return confirm('¿Seguro que deseas cancelar esta cita?')">
+                    <i class="fas fa-times me-1"></i>Cancelar
+                  </a>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+
+    <!-- Paginación (si la implementas) -->
+    <nav aria-label="Page navigation" class="mt-4">
+      <ul class="pagination justify-content-center">
+        <li class="page-item disabled">
+          <span class="page-link">Total: {{ citas|length }} citas</span>
+        </li>
+      </ul>
+    </nav>
+
+  {% else %}
+    <div class="card shadow-sm">
+      <div class="card-body text-center py-5">
+        <i class="fas fa-calendar-times fa-4x text-muted mb-3"></i>
+        <h4>No tienes citas</h4>
+        <p class="text-muted">¿Listo para agendar tu primera cita?</p>
+        <a href="{% url 'request_appointment' %}" class="btn btn-primary btn-lg">
+          <i class="fas fa-calendar-plus me-2"></i>Solicitar Cita
+        </a>
+      </div>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

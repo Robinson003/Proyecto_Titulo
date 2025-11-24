@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Mi Perfil{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="row">
+    <!-- Tarjeta de perfil principal -->
+    <div class="col-md-4 mb-4">
+      <div class="card shadow-lg border-0">
+        <div class="card-body text-center p-4">
+          <img src="{% static 'img/perfil1.jpg' %}" class="rounded-circle mb-3 border border-3 border-primary" 
+               width="120" height="120" alt="Avatar">
+          <h4 class="mb-1">{{ user.first_name|default:"Sin nombre" }} {{ user.last_name }}</h4>
+          <p class="text-muted mb-3">@{{ user.username }}</p>
+
+          <!-- Badges de roles -->
+          <div class="mb-3">
+            {% for group in user.groups.all %}
+              {% if group.name == 'VIP' %}
+                <span class="badge bg-success">
+                  <i class="fas fa-star me-1"></i>Usuario VIP
+                </span>
+              {% elif group.name == 'Trabajadores' %}
+                <span class="badge bg-warning text-dark">
+                  <i class="fas fa-user-tie me-1"></i>Trabajador
+                </span>
+              {% endif %}
+            {% endfor %}
+            
+            {% if user.is_staff %}
+              <span class="badge bg-danger">
+                <i class="fas fa-shield-alt me-1"></i>Staff
+              </span>
+            {% endif %}
+          </div>
+
+          <hr>
+
+          <div class="text-start">
+            <p class="mb-2"><i class="fas fa-envelope text-primary me-2"></i><strong>Email:</strong> {{ user.email|default:"No especificado" }}</p>
+            <p class="mb-2"><i class="fas fa-calendar text-success me-2"></i><strong>Miembro desde:</strong> {{ user.date_joined|date:"d/m/Y" }}</p>
+          </div>
+
+          <div class="d-grid gap-2 mt-4">
+            <a href="{% url 'edit_profile' %}" class="btn btn-primary">
+              <i class="fas fa-edit me-2"></i>Editar perfil
+            </a>
+            <a href="{% url 'logout' %}" class="btn btn-outline-secondary">
+              <i class="fas fa-sign-out-alt me-2"></i>Cerrar sesión
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Accesos rápidos según rol -->
+    <div class="col-md-8">
+      <h4 class="mb-3">Accesos Rápidos</h4>
+      
+      <div class="row">
+        {% for group in user.groups.all %}
+          {% if group.name == 'VIP' %}
+            <!-- Panel VIP -->
+            <div class="col-md-6 mb-3">
+              <div class="card border-primary">
+                <div class="card-body">
+                  <h5 class="card-title"><i class="fas fa-calendar-plus text-primary me-2"></i>Solicitar Cita</h5>
+                  <p class="card-text small">Agenda una nueva cita con nuestro equipo.</p>
+                  <a href="{% url 'request_appointment' %}" class="btn btn-sm btn-primary">Ir</a>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <div class="card border-success">
+                <div class="card-body">
+                  <h5 class="card-title"><i class="fas fa-list text-success me-2"></i>Mis Citas</h5>
+                  <p class="card-text small">Revisa el estado de tus citas agendadas.</p>
+                  <a href="{% url 'my_appointments' %}" class="btn btn-sm btn-success">Ver</a>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <div class="card border-info">
+                <div class="card-body">
+                  <h5 class="card-title"><i class="fas fa-calendar text-info me-2"></i>Calendario</h5>
+                  <p class="card-text small">Visualiza tus citas en calendario.</p>
+                  <a href="{% url 'calendar' %}" class="btn btn-sm btn-info text-white">Abrir</a>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <div class="card border-primary">
+                <div class="card-body">
+                  <h5 class="card-title"><i class="fas fa-tachometer-alt text-primary me-2"></i>Mi Dashboard</h5>
+                  <p class="card-text small">Panel de control personal.</p>
+                  <a href="{% url 'vip_dashboard' %}" class="btn btn-sm btn-primary">Dashboard</a>
+                </div>
+              </div>
+            </div>
+          {% endif %}
+
+          {% if group.name == 'Trabajadores' or user.is_staff %}
+            <!-- Panel Trabajadores -->
+            <div class="col-md-6 mb-3">
+              <div class="card border-warning">
+                <div class="card-body">
+                  <h5 class="card-title"><i class="fas fa-chart-line text-warning me-2"></i>Dashboard Admin</h5>
+                  <p class="card-text small">Estadísticas y métricas del sistema.</p>
+                  <a href="{% url 'worker_dashboard' %}" class="btn btn-sm btn-warning">Ir</a>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <div class="card border-danger">
+                <div class="card-body">
+                  <h5 class="card-title"><i class="fas fa-tasks text-danger me-2"></i>Gestionar Citas</h5>
+                  <p class="card-text small">Aprobar o rechazar solicitudes.</p>
+                  <a href="{% url 'manage_appointments' %}" class="btn btn-sm btn-danger">Gestionar</a>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <div class="card border-secondary">
+                <div class="card-body">
+                  <h5 class="card-title"><i class="fas fa-clock text-secondary me-2"></i>Horarios</h5>
+                  <p class="card-text small">Configurar disponibilidad.</p>
+                  <a href="{% url 'manage_slots' %}" class="btn btn-sm btn-secondary">Configurar</a>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <div class="card border-dark">
+                <div class="card-body">
+                  <h5 class="card-title"><i class="fas fa-envelope text-dark me-2"></i>Mensajes</h5>
+                  <p class="card-text small">Ver mensajes de contacto.</p>
+                  <a href="{% url 'view_messages' %}" class="btn btn-sm btn-dark">Ver</a>
+                </div>
+              </div>
+            </div>
+          {% endif %}
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

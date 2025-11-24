@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Panel Administrativo{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+  <h2 class="mb-4 text-center">Panel Administrativo</h2>
+
+  <div class="row mb-4">
+    <div class="col-md-4">
+      <div class="card text-center shadow-sm p-3">
+        <h5>Total de Usuarios</h5>
+        <h2>{{ total_users }}</h2>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card text-center shadow-sm p-3">
+        <h5>Total de Citas</h5>
+        <h2>{{ total_events }}</h2>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card text-center shadow-sm p-3">
+        <h5>Próximas Citas</h5>
+        <ul class="list-unstyled">
+          {% for event in upcoming_events %}
+            <li>{{ event.date }} {{ event.time }} - {{ event.title }} ({{ event.user.username }})</li>
+          {% empty %}
+            <li>No hay citas próximas</li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block head %}
+<style>
+  /* Botones azul oscuro */
+    .btn-primary {
+    background-color: #004b8d !important;
+    border-color: #004b8d !important;
+  }
+
+  .btn-primary:hover {
+    background-color: #003666 !important; /* un tono más oscuro al pasar el mouse */
+    border-color: #003666 !important;
+  }
+</style>
+{% endblock %}

@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Gestionar Citas{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <h2 class="mb-4"><i class="fas fa-tasks text-danger me-2"></i>Gestionar Todas las Citas</h2>
+
+  <!-- Filtros avanzados -->
+  <div class="card shadow-sm mb-4">
+    <div class="card-header bg-secondary text-white">
+      <i class="fas fa-filter me-2"></i>Filtros de Búsqueda
+    </div>
+    <div class="card-body">
+      <form method="get" class="row g-3">
+        <div class="col-md-3">
+          <label class="form-label">Estado:</label>
+          <select name="status" class="form-select">
+            <option value="">Todos</option>
+            <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>Pendientes</option>
+            <option value="confirmed" {% if status_filter == 'confirmed' %}selected{% endif %}>Confirmadas</option>
+            <option value="cancelled" {% if status_filter == 'cancelled' %}selected{% endif %}>Canceladas</option>
+            <option value="completed" {% if status_filter == 'completed' %}selected{% endif %}>Completadas</option>
+          </select>
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Desde:</label>
+          <input type="date" name="date_from" class="form-control" value="{{ date_from }}">
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Hasta:</label>
+          <input type="date" name="date_to" class="form-control" value="{{ date_to }}">
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Usuario:</label>
+          <input type="text" name="user" class="form-control" placeholder="Nombre o email" value="{{ user_search }}">
+        </div>
+
+        <div class="col-12">
+          <button type="submit" class="btn btn-primary">
+            <i class="fas fa-search me-1"></i>Buscar
+          </button>
+          <a href="{% url 'manage_appointments' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-redo me-1"></i>Limpiar
+          </a>
+          <span class="ms-3 text-muted">Total encontrado: <strong>{{ citas|length }}</strong></span>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Tabla de citas -->
+  {% if citas %}
+    <div class="card shadow-sm">
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <thead class="table-dark">
+              <tr>
+                <th>ID</th>
+                <th>Usuario</th>
+                <th>Título</th>
+                <th>Fecha</th>
+                <th>Hora</th>
+                <th>Estado</th>
+                <th>Creada</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for cita in citas %}
+                <tr>
+                  <td>{{ cita.id }}</td>
+                  <td>
+                    <i class="fas fa-user text-primary me-1"></i>
+                    {{ cita.user.username }}
+                    <br>
+                    <small class="text-muted">{{ cita.user.email }}</small>
+                  </td>
+                  <td>{{ cita.title }}</td>
+                  <td>{{ cita.date|date:"d/m/Y" }}</td>
+                  <td>{{ cita.time|time:"H:i" }}</td>
+                  <td>
+                    {% if cita.status == 'pending' %}
+                      <span class="badge bg-warning">Pendiente</span>
+                    {% elif cita.status == 'confirmed' %}
+                      <span class="badge bg-success">Confirmada</span>
+                    {% elif cita.status == 'cancelled' %}
+                      <span class="badge bg-danger">Cancelada</span>
+                    {% else %}
+                      <span class="badge bg-secondary">Completada</span>
+                    {% endif %}
+                  </td>
+                  <td>
+                    <small class="text-muted">{{ cita.created_at|date:"d/m/Y H:i" }}</small>
+                  </td>
+                  <td>
+                    <a href="{% url 'approve_appointment' cita.id %}" class="btn btn-sm btn-primary" title="Gestionar">
+                      <i class="fas fa-edit"></i>
+                    </a>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Resumen estadístico -->
+    <div class="row mt-4">
+      <div class="col-md-3">
+        <div class="card text-center">
+          <div class="card-body">
+            <h3 class="text-warning">{{ citas|dictsort:"status"|dictsortreversed:"status"|length }}</h3>
+            <small class="text-muted">Total de citas</small>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  {% else %}
+    <div class="card shadow-sm">
+      <div class="card-body text-center py-5">
+        <i class="fas fa-search fa-4x text-muted mb-3"></i>
+        <h4>No se encontraron citas</h4>
+        <p class="text-muted">Intenta ajustar los filtros de búsqueda</p>
+      </div>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,223 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Dashboard Trabajador{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <h2 class="mb-4"><i class="fas fa-chart-line text-warning me-2"></i>Dashboard de Trabajador</h2>
+
+  <!-- Estadísticas principales -->
+  <div class="row mb-4">
+    <div class="col-md-4 mb-3">
+      <div class="card bg-warning text-white shadow">
+        <div class="card-body">
+          <div class="d-flex align-items-center">
+            <i class="fas fa-clock fa-3x me-3"></i>
+            <div>
+              <h3 class="mb-0">{{ total_pending }}</h3>
+              <p class="mb-0">Citas Pendientes</p>
+            </div>
+          </div>
+        </div>
+        <div class="card-footer bg-transparent">
+          <a href="{% url 'manage_appointments' %}?status=pending" class="text-white text-decoration-none">
+            Ver todas <i class="fas fa-arrow-right ms-1"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4 mb-3">
+      <div class="card bg-success text-white shadow">
+        <div class="card-body">
+          <div class="d-flex align-items-center">
+            <i class="fas fa-check-circle fa-3x me-3"></i>
+            <div>
+              <h3 class="mb-0">{{ total_confirmed }}</h3>
+              <p class="mb-0">Citas Confirmadas</p>
+            </div>
+          </div>
+        </div>
+        <div class="card-footer bg-transparent">
+          <a href="{% url 'manage_appointments' %}?status=confirmed" class="text-white text-decoration-none">
+            Ver todas <i class="fas fa-arrow-right ms-1"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4 mb-3">
+      <div class="card bg-info text-white shadow">
+        <div class="card-body">
+          <div class="d-flex align-items-center">
+            <i class="fas fa-users fa-3x me-3"></i>
+            <div>
+              <h3 class="mb-0">{{ total_users }}</h3>
+              <p class="mb-0">Usuarios VIP</p>
+            </div>
+          </div>
+        </div>
+        <div class="card-footer bg-transparent">
+          <span class="text-white">Total registrados</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <!-- Citas de hoy -->
+    <div class="col-md-6 mb-4">
+      <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+          <h5 class="mb-0"><i class="fas fa-calendar-day me-2"></i>Citas de Hoy</h5>
+        </div>
+        <div class="card-body" style="max-height: 400px; overflow-y: auto;">
+          {% if today_appointments %}
+            <div class="list-group">
+              {% for cita in today_appointments %}
+                <div class="list-group-item">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                      <h6 class="mb-1">{{ cita.title }}</h6>
+                      <small class="text-muted">
+                        {{ cita.user.username }} - {{ cita.time|time:"H:i" }}
+                      </small>
+                    </div>
+                    {% if cita.status == 'pending' %}
+                      <span class="badge bg-warning">Pendiente</span>
+                    {% elif cita.status == 'confirmed' %}
+                      <span class="badge bg-success">Confirmada</span>
+                    {% endif %}
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <p class="text-muted text-center py-4">No hay citas para hoy</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Pendientes de aprobación -->
+    <div class="col-md-6 mb-4">
+      <div class="card shadow-sm">
+        <div class="card-header bg-warning text-white">
+          <h5 class="mb-0"><i class="fas fa-exclamation-circle me-2"></i>Pendientes de Aprobación</h5>
+        </div>
+        <div class="card-body" style="max-height: 400px; overflow-y: auto;">
+          {% if pending_appointments %}
+            <div class="list-group">
+              {% for cita in pending_appointments %}
+                <div class="list-group-item">
+                  <div class="d-flex justify-content-between align-items-start">
+                    <div class="flex-grow-1">
+                      <h6 class="mb-1">{{ cita.title }}</h6>
+                      <small class="text-muted">
+                        {{ cita.user.username }} - {{ cita.date|date:"d/m/Y" }} {{ cita.time|time:"H:i" }}
+                      </small>
+                    </div>
+                    <a href="{% url 'approve_appointment' cita.id %}" class="btn btn-sm btn-primary">
+                      <i class="fas fa-edit"></i>
+                    </a>
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <p class="text-muted text-center py-4">
+              <i class="fas fa-check-double fa-2x mb-2"></i><br>
+              No hay solicitudes pendientes
+            </p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Próximas confirmadas -->
+  <div class="card shadow-sm">
+    <div class="card-header bg-success text-white">
+      <h5 class="mb-0"><i class="fas fa-calendar-check me-2"></i>Próximas Citas Confirmadas</h5>
+    </div>
+    <div class="card-body">
+      {% if upcoming_confirmed %}
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th>Usuario</th>
+                <th>Título</th>
+                <th>Fecha</th>
+                <th>Hora</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for cita in upcoming_confirmed %}
+                <tr>
+                  <td>{{ cita.user.username }}</td>
+                  <td>{{ cita.title }}</td>
+                  <td>{{ cita.date|date:"d/m/Y" }}</td>
+                  <td>{{ cita.time|time:"H:i" }}</td>
+                  <td>
+                    <a href="{% url 'approve_appointment' cita.id %}" class="btn btn-sm btn-outline-primary">
+                      <i class="fas fa-eye me-1"></i>Ver
+                    </a>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <p class="text-muted text-center">No hay citas confirmadas próximamente</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Accesos rápidos -->
+  <div class="row mt-4">
+    <div class="col-md-3 mb-3">
+      <a href="{% url 'manage_appointments' %}" class="text-decoration-none">
+        <div class="card bg-danger text-white shadow-sm">
+          <div class="card-body text-center">
+            <i class="fas fa-tasks fa-3x mb-2"></i>
+            <h6>Gestionar Citas</h6>
+          </div>
+        </div>
+      </a>
+    </div>
+    <div class="col-md-3 mb-3">
+      <a href="{% url 'manage_slots' %}" class="text-decoration-none">
+        <div class="card bg-secondary text-white shadow-sm">
+          <div class="card-body text-center">
+            <i class="fas fa-clock fa-3x mb-2"></i>
+            <h6>Horarios</h6>
+          </div>
+        </div>
+      </a>
+    </div>
+    <div class="col-md-3 mb-3">
+      <a href="{% url 'view_messages' %}" class="text-decoration-none">
+        <div class="card bg-dark text-white shadow-sm">
+          <div class="card-body text-center">
+            <i class="fas fa-envelope fa-3x mb-2"></i>
+            <h6>Mensajes</h6>
+          </div>
+        </div>
+      </a>
+    </div>
+    <div class="col-md-3 mb-3">
+      <a href="/admin/" class="text-decoration-none">
+        <div class="card bg-info text-white shadow-sm">
+          <div class="card-body text-center">
+            <i class="fas fa-cog fa-3x mb-2"></i>
+            <h6>Admin Panel</h6>
+          </div>
+        </div>
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}

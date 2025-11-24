@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Solicitar Cita{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="row">
+    <!-- Formulario de solicitud -->
+    <div class="col-md-7">
+      <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+          <h5 class="mb-0"><i class="fas fa-calendar-plus me-2"></i>Solicitar Nueva Cita</h5>
+        </div>
+        <div class="card-body">
+          <form method="post">
+            {% csrf_token %}
+            
+            <div class="mb-3">
+              <label for="{{ form.title.id_for_label }}" class="form-label">
+                <i class="fas fa-heading me-1"></i>{{ form.title.label }}
+              </label>
+              {{ form.title }}
+              {% if form.title.errors %}
+                <div class="text-danger small">{{ form.title.errors }}</div>
+              {% endif %}
+            </div>
+
+            <div class="mb-3">
+              <label for="{{ form.date.id_for_label }}" class="form-label">
+                <i class="fas fa-calendar me-1"></i>{{ form.date.label }}
+              </label>
+              {{ form.date }}
+              {% if form.date.errors %}
+                <div class="text-danger small">{{ form.date.errors }}</div>
+              {% endif %}
+            </div>
+
+            <div class="mb-3">
+              <label for="{{ form.time.id_for_label }}" class="form-label">
+                <i class="fas fa-clock me-1"></i>{{ form.time.label }}
+              </label>
+              {{ form.time }}
+              {% if form.time.errors %}
+                <div class="text-danger small">{{ form.time.errors }}</div>
+              {% endif %}
+            </div>
+
+            <div class="mb-3">
+              <label for="{{ form.notes.id_for_label }}" class="form-label">
+                <i class="fas fa-comment me-1"></i>{{ form.notes.label }}
+              </label>
+              {{ form.notes }}
+              {% if form.notes.errors %}
+                <div class="text-danger small">{{ form.notes.errors }}</div>
+              {% endif %}
+            </div>
+
+            <div class="alert alert-info">
+              <i class="fas fa-info-circle me-2"></i>
+              <strong>Nota:</strong> Tu solicitud quedará pendiente hasta que un trabajador la confirme.
+            </div>
+
+            <div class="d-grid gap-2">
+              <button type="submit" class="btn btn-primary btn-lg">
+                <i class="fas fa-paper-plane me-2"></i>Enviar Solicitud
+              </button>
+              <a href="{% url 'vip_dashboard' %}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Volver al Dashboard
+              </a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Horarios disponibles -->
+    <div class="col-md-5">
+      <div class="card shadow-sm">
+        <div class="card-header bg-info text-white">
+          <h5 class="mb-0"><i class="fas fa-clock me-2"></i>Horarios Disponibles</h5>
+        </div>
+        <div class="card-body">
+          {% if slots %}
+            <div class="list-group">
+              {% for slot in slots %}
+                <div class="list-group-item">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                      <strong>{{ slot.get_day_of_week_display }}</strong>
+                      <br>
+                      <small class="text-muted">
+                        {{ slot.start_time|time:"H:i" }} - {{ slot.end_time|time:"H:i" }}
+                      </small>
+                    </div>
+                    <span class="badge bg-success">Disponible</span>
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="text-center py-3">
+              <i class="fas fa-exclamation-triangle fa-2x text-warning mb-3"></i>
+              <p class="text-muted">No hay horarios configurados aún.</p>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Instrucciones -->
+      <div class="card shadow-sm mt-3">
+        <div class="card-body">
+          <h6><i class="fas fa-lightbulb text-warning me-2"></i>Consejos</h6>
+          <ul class="small mb-0">
+            <li>Selecciona una fecha dentro de los horarios disponibles</li>
+            <li>Describe claramente el motivo de tu cita</li>
+            <li>Recibirás notificación cuando sea confirmada</li>
+            <li>Puedes cancelar hasta 24 horas antes</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

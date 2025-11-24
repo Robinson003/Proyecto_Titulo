@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Contacto{% endblock %}
+
+{% block content %}
+<div class="contact-card">
+    <h2><i class="fas fa-envelope me-2"></i>Contáctanos</h2>
+    <p class="text-center text-muted mb-4">¿Tienes alguna consulta? Escríbenos y te responderemos pronto</p>
+    
+    <form method="POST">
+        {% csrf_token %}
+
+        <div class="mb-3 input-group">
+            <span class="input-group-text"><i class="fas fa-user"></i></span>
+            <input type="text" name="name" class="form-control" placeholder="Nombre completo" required>
+        </div>
+
+        <div class="mb-3 input-group">
+            <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+            <input type="email" name="email" class="form-control" placeholder="Correo electrónico" required>
+        </div>
+
+        <div class="mb-3 input-group">
+            <span class="input-group-text"><i class="fas fa-tag"></i></span>
+            <input type="text" name="subject" class="form-control" placeholder="Asunto">
+        </div>
+
+        <div class="mb-3 input-group">
+            <span class="input-group-text"><i class="fas fa-comment"></i></span>
+            <textarea name="message" class="form-control" placeholder="Escribe tu mensaje aquí..." rows="5" required></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-primary">
+          <i class="fas fa-paper-plane me-2"></i>Enviar Mensaje
+        </button>
+    </form>
+</div>
+{% endblock %}
+
+{% block head %}
+<style>
+  .contact-card {
+      max-width: 700px;
+      margin: 40px auto;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+      background-color: #ffffff;
+  }
+  .contact-card h2 {
+      margin-bottom: 10px;
+      text-align: center;
+      color: #004b8d;
+  }
+  .contact-card button {
+      border-radius: 8px;
+      width: 100%;
+  }
+</style>
+{% endblock %}

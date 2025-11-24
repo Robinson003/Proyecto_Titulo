@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Calendario{% endblock %}
+
+{% block head %}
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.css" rel="stylesheet">
+<style>
+#calendar {
+  max-width: 1000px;
+  margin: 40px auto;
+  background: #fff;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.legend {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin: 20px 0;
+  flex-wrap: wrap;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.legend-color {
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="text-center my-4">
+  <h2><i class="fas fa-calendar me-2"></i>Calendario de Mis Citas</h2>
+  <p class="text-muted">Visualiza y gestiona tus citas agendadas</p>
+</div>
+
+<!-- Leyenda de colores -->
+<div class="legend">
+  <div class="legend-item">
+    <div class="legend-color" style="background: #FFA500;"></div>
+    <span>Pendiente</span>
+  </div>
+  <div class="legend-item">
+    <div class="legend-color" style="background: #28A745;"></div>
+    <span>Confirmada</span>
+  </div>
+  <div class="legend-item">
+    <div class="legend-color" style="background: #DC3545;"></div>
+    <span>Cancelada</span>
+  </div>
+  <div class="legend-item">
+    <div class="legend-color" style="background: #6C757D;"></div>
+    <span>Completada</span>
+  </div>
+</div>
+
+<div id="calendar"></div>
+
+<!-- Modal para crear cita -->
+<div class="modal fade" id="createEventModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form id="create-appointment-form">
+        {% csrf_token %}
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title"><i class="fas fa-calendar-plus me-2"></i>Nueva Cita</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">Título de la cita</label>
+            <input type="text" name="title" class="form-control" placeholder="Ej: Consulta general" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Fecha</label>
+            <input type="date" name="date" class="form-control" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Hora</label>
+            <input type="time" name="time" class="form-control" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Notas (opcional)</label>
+            <textarea name="notes" class="form-control" rows="3" placeholder="Detalles adicionales..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary">
+            <i class="fas fa-save me-1"></i>Guardar Cita
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const calendarEl = document.getElementById("calendar");
+  const modal = new bootstrap.Modal(document.getElementById("createEventModal"));
+  const form = document.getElementById("create-appointment-form");
+
+  const calendar = new FullCalendar.Calendar(calendarEl, {
+    initialView: "dayGridMonth",
+    locale: "es",
+    selectable: true,
+    headerToolbar: {
+      left: 'prev,next today',
+      center: 'title',
+      right: 'dayGridMonth,timeGridWeek,listWeek'
+    },
+    buttonText: {
+      today: 'Hoy',
+      month: 'Mes',
+      week: 'Semana',
+      list: 'Lista'
+    },
+    events: "{% url 'api_events' %}",
+    select: function (info) {
+      document.querySelector('input[name="date"]').value = info.startStr;
+      modal.show();
+    },
+    eventClick: function(info) {
+      if(confirm("¿Deseas eliminar esta cita?")) {
+        fetch(`/vip/api/events/delete/${info.event.id}/`, {
+          method: "POST",
+          headers: {
+            "X-CSRFToken": "{{ csrf_token }}",
+            "Content-Type": "application/json"
+          },
+          credentials: 'same-origin'
+        })
+        .then(r => r.json())
+        .then(data => {
+          if(data.status === "deleted") {
+            info.event.remove();
+            alert("Cita eliminada correctamente");
+          }
+        })
+        .catch(err => alert("Error al eliminar la cita"));
+      }
+    }
+  });
+
+  calendar.render();
+
+  form.addEventListener("submit", function(e) {
+    e.preventDefault();
+    const fd = new FormData(form);
+
+    fetch("{% url 'api_create_event' %}", {
+      method: "POST",
+      headers: { "X-CSRFToken": "{{ csrf_token }}" },
+      body: fd,
+      credentials: "same-origin"
+    })
+    .then(r => r.json())
+    .then(data => {
+      if (data.status === "ok") {
+        calendar.refetchEvents();
+        modal.hide();
+        form.reset();
+        alert("¡Cita creada exitosamente!");
+      } else {
+        alert("Error: " + (data.errors || "No se pudo crear la cita"));
+      }
+    })
+    .catch(err => {
+      alert("Error de conexión");
+    });
+  });
+});
+</script>
+{% endblock %}
