@@ -1,1 +1,1 @@
-web: gunicorn miproyecto.wsgi
+web: gunicorn miproyecto.wsgi --bind 0.0.0.0:$PORT
